@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Word Hunt — Emerald Night</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ink:#ffffff;
+      --muted: rgba(255,255,255,.78);
+
+      --g0:#02150f;
+      --g1:#053024;
+      --g2:#0b5b44;
+      --g3:#11a87f;
+
+      --panel: rgba(6,18,14,.90);
+      --stroke: rgba(255,255,255,.14);
+
+      --accent:#34d399;
+      --accent2:#10b981;
+
+      --tileStroke: rgba(255,255,255,.16);
+      --shadow: 0 18px 40px rgba(0,0,0,.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; overscroll-behavior:none; }
+
+    body{
+      min-height:100vh;
+      margin:0;
+      font-family:"Baloo 2", system-ui;
+      color: var(--ink);
+      display:grid;
+      place-items:center;
+      padding: 18px 14px 28px;
+      background: linear-gradient(160deg, var(--g0), var(--g1) 32%, var(--g2) 64%, var(--g3));
+      overflow:hidden;
+      touch-action: none;
+    }
+
+    /* Aurora glow for more interesting bg */
+    .aurora{
+      position:fixed;
+      inset:-20%;
+      z-index:-2;
+      pointer-events:none;
+      background:
+        radial-gradient(900px 520px at 20% 25%, rgba(52,211,153,.26), transparent 60%),
+        radial-gradient(760px 500px at 85% 30%, rgba(16,185,129,.22), transparent 65%),
+        radial-gradient(900px 560px at 55% 85%, rgba(167,243,208,.16), transparent 70%);
+      filter: blur(6px);
+      opacity:.85;
+      animation: aur 10s ease-in-out infinite alternate;
+    }
+    @keyframes aur{
+      from{ transform: translate3d(-10px,-6px,0) scale(1); }
+      to{ transform: translate3d(10px,6px,0) scale(1.03); }
+    }
+
+    /* sparkle field (denser) */
+    .spark, .spark2, .spark3{
+      position:fixed; inset:-280px; pointer-events:none; z-index:-1;
+      background-repeat: repeat;
+      animation: drift 70s linear infinite;
+      opacity:.9;
+    }
+    .spark{
+      background-image:
+        radial-gradient(1.2px 1.2px at 10px 20px, rgba(255,255,255,.9) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 80px 60px, rgba(255,255,255,.75) 50%, transparent 52%),
+        radial-gradient(1.2px 1.2px at 140px 120px, rgba(255,255,255,.82) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 210px 40px, rgba(255,255,255,.9) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 260px 160px, rgba(255,255,255,.72) 50%, transparent 52%),
+        radial-gradient(1.2px 1.2px at 330px 90px, rgba(255,255,255,.8) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 30px 170px, rgba(255,255,255,.7) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 200px 210px, rgba(255,255,255,.7) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 300px 210px, rgba(255,255,255,.65) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 120px 220px, rgba(255,255,255,.65) 50%, transparent 52%);
+      background-size: 380px 240px;
+    }
+    .spark2{
+      background-image:
+        radial-gradient(1.6px 1.6px at 30px 40px, rgba(255,255,255,.55) 50%, transparent 52%),
+        radial-gradient(1.4px 1.4px at 120px 90px, rgba(255,255,255,.50) 50%, transparent 52%),
+        radial-gradient(1.5px 1.5px at 210px 160px, rgba(255,255,255,.48) 50%, transparent 52%),
+        radial-gradient(1.6px 1.6px at 300px 30px, rgba(255,255,255,.54) 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 340px 140px, rgba(255,255,255,.46) 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 40px 210px, rgba(255,255,255,.44) 50%, transparent 52%),
+        radial-gradient(1.4px 1.4px at 260px 240px, rgba(255,255,255,.42) 50%, transparent 52%);
+      background-size: 460px 320px; opacity:.55; animation-duration:100s; animation-direction: reverse;
+    }
+    .spark3{
+      background-image:
+        radial-gradient(2.1px 2.1px at 40px 70px, rgba(16,185,129,.55) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 160px 40px, rgba(52,211,153,.48) 50%, transparent 52%),
+        radial-gradient(2.2px 2.2px at 250px 150px, rgba(167,243,208,.38) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 320px 95px, rgba(16,185,129,.40) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 120px 240px, rgba(52,211,153,.30) 50%, transparent 52%);
+      background-size: 560px 420px; opacity:.32; animation-duration:135s;
+    }
+    @keyframes drift{ to{ transform: translate3d(-300px, -220px, 0); } }
+
+    .wrap{ width: min(980px, 100%); position:relative; }
+    .infoCorner{ position:absolute; top:-18px; right:14px; z-index:10; }
+
+    .top{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 900px){ .top{ grid-template-columns: 1fr; } }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    .panel.scorePanel{ border-radius: 28px 22px 30px 20px; }
+    .panel.controlsPanel{ border-radius: 22px 30px 22px 30px; }
+
+    .label{ color: var(--muted); font-size: 1.05rem; line-height:1; }
+    .scoreBig{
+      font-size: clamp(2.6rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: .5px;
+      line-height: 1.05;
+      margin-top: 4px;
+      text-shadow: 0 2px 0 rgba(0,0,0,.25);
+    }
+    .hudRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+      border-radius:999px;
+      padding:6px 10px;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.02rem;
+      color: var(--muted);
+    }
+    .timer{ color:#fff; font-weight:800; }
+    .timer.low{ color:#ff5d8a; }
+
+    .rowx{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+
+    select.select{
+      appearance:auto;
+      border-radius: 18px !important;
+      border: 1px solid rgba(255,255,255,.16) !important;
+      background-color: rgba(255,255,255,.05) !important;
+      color: #fff !important;
+      font-weight: 800 !important;
+      padding: 8px 14px !important;
+      min-width: 130px;
+    }
+    select.select option{ color:#111; background:#fff; }
+
+    .btnCartoon{
+      border-radius: 18px !important;
+      font-weight: 800 !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      padding: 10px 14px !important;
+      box-shadow: 0 8px 0 rgba(0,0,0,.35) !important;
+      transform: translateY(0);
+      transition: transform .06s ease;
+      letter-spacing:.2px;
+      user-select:none;
+    }
+    .btnCartoon:active{ transform: translateY(2px); box-shadow:0 6px 0 rgba(0,0,0,.35) !important; }
+    .btnGreen{ background: linear-gradient(180deg, var(--accent), var(--accent2)) !important; color:#062016 !important; border:0 !important; }
+    .btnGhost{ background: rgba(255,255,255,.05) !important; border:1px solid rgba(255,255,255,.16) !important; color:#fff !important; box-shadow: 0 8px 0 rgba(0,0,0,.28) !important; }
+
+    .board{
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 30px 22px 30px 22px;
+      box-shadow: var(--shadow);
+      padding: clamp(12px, 2.3vw, 18px);
+      position:relative;
+    }
+    .title{ text-align:center; font-size: clamp(1.55rem, 3.6vw, 1.95rem); font-weight:800; }
+    .subtitle{ text-align:center; color: var(--muted); font-size: clamp(.98rem, 2.7vw, 1.06rem); margin-top:3px; }
+
+    .gridWrap{ display:grid; place-items:center; margin-top:14px; margin-bottom:10px; }
+
+    .gridStage{
+      width: min(560px, 92vw);
+      aspect-ratio: 1 / 1;
+      position: relative;
+      touch-action: none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .grid{
+      width:100%;
+      height:100%;
+      display:grid;
+      gap: clamp(6px, 1.3vw, 12px);
+      touch-action: none;
+    }
+
+    .pathSvg{ position:absolute; inset:0; pointer-events:none; }
+    .pathLineGlow{
+      fill:none;
+      stroke: rgba(167,243,208,.45);
+      stroke-width: 18;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: blur(.4px);
+    }
+    .pathLine{
+      fill:none;
+      stroke: rgba(52,211,153,.92);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.45));
+    }
+
+    .cell{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.22));
+      border: 1px solid var(--tileStroke);
+      box-shadow: 0 10px 0 rgba(0,0,0,.30);
+      display:grid;
+      place-items:center;
+      font-size: clamp(1.15rem, 3.4vw, 1.8rem);
+      font-weight:800;
+      border-radius: clamp(12px, 2.9vw, 22px);
+      color:#fff;
+      cursor:pointer;
+      transition: transform .06s ease, outline .06s ease, box-shadow .06s ease;
+      line-height:1;
+    }
+    .cell.r1{ border-radius: 24px 16px 22px 14px; }
+    .cell.r2{ border-radius: 16px 24px 14px 22px; }
+    .cell.r3{ border-radius: 22px 14px 24px 16px; }
+    .cell.r4{ border-radius: 14px 22px 16px 24px; }
+    .cell.active{
+      outline: 3px solid rgba(52,211,153,.75);
+      box-shadow: 0 10px 0 rgba(0,0,0,.30), 0 0 0 6px rgba(52,211,153,.18);
+      transform: translateY(1px);
+    }
+
+    .wordBar{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:6px; align-items:center; }
+    .wordBox{
+      width: min(560px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      padding: 12px 16px;
+      font-size: clamp(1.05rem, 3.4vw, 1.15rem);
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align:center;
+      color:#fff;
+      min-height:52px;
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    .feedback{ text-align:center; margin-top:10px; min-height:30px; font-size:1.12rem; font-weight:800; }
+    .good{ color:#63ffb8; }
+    .bad{ color:#ff5d8a; }
+
+    .statusLine{
+      margin-top:8px;
+      text-align:center;
+      color: rgba(255,255,255,.80);
+      font-size:.98rem;
+      display:flex; justify-content:center; align-items:center; gap:8px;
+    }
+    .spinner{
+      width:16px;height:16px;border-radius:999px;
+      border:2px solid rgba(255,255,255,.25);
+      border-top-color: rgba(255,255,255,.9);
+      animation: spin .8s linear infinite;
+      display:none;
+    }
+    .spinner.on{ display:inline-block; }
+    @keyframes spin{ to{ transform: rotate(360deg);} }
+
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; place-items:center; z-index:999; padding:18px; }
+    .overlay.on{ display:grid; }
+    .popup{
+      width:min(600px,100%);
+      background: rgba(6,18,14,.96);
+      border-radius: 30px 22px 30px 22px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 22px 60px rgba(0,0,0,.65);
+      padding:16px 16px 14px;
+      color:#fff;
+    }
+    .popTitle{ font-size:1.7rem;font-weight:800;text-align:center;margin-bottom:4px; }
+    .popText{ text-align:center;color:rgba(255,255,255,.78);font-size:1.05rem; }
+    .popScore{ text-align:center;font-size:2.3rem;font-weight:800;margin:10px 0 6px; }
+    .popSmall{ text-align:center;color:rgba(255,255,255,.78);font-size:1.0rem;margin-bottom:12px; }
+  </style>
+</head>
+
+<body>
+  <div class="aurora"></div>
+  <div class="spark"></div>
+  <div class="spark2"></div>
+  <div class="spark3"></div>
+
+  <div class="wrap">
+    <div class="top">
+      <div class="panel scorePanel">
+        <div class="label">Set Score</div>
+        <div id="setScore" class="scoreBig">0</div>
+        <div class="hudRow">
+          <div class="pill">⏱ <span id="timer" class="timer">1:15</span></div>
+          <div class="pill">Grid <span id="gridLabel" style="font-weight:800;color:#fff;">4×4</span></div>
+          <div class="pill">Time <span id="timeLabel" style="font-weight:800;color:#fff;">75s</span></div>
+        </div>
+      </div>
+
+      <div class="panel controlsPanel">
+        <div class="rowx">
+          <div class="label">Grid size</div>
+          <select id="gridSel" class="form-select select" style="width:auto;">
+            <option value="4" selected>4×4</option>
+            <option value="5">5×5</option>
+            <option value="6">6×6</option>
+            <option value="7">7×7</option>
+            <option value="8">8×8</option>
+          </select>
+        </div>
+        <div class="rowx mt-2">
+          <div class="label">Set time</div>
+          <select id="timeSel" class="form-select select" style="width:auto;">
+            <option value="30">30s</option>
+            <option value="45">45s</option>
+            <option value="60">60s</option>
+            <option value="75" selected>75s</option>
+            <option value="90">90s</option>
+            <option value="120">120s</option>
+          </select>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button id="btnStart" class="btn btnCartoon btnGreen">Start set</button>
+          <button id="btnClear" class="btn btnCartoon btnGhost">Clear</button>
+        </div>
+
+        <div class="label mt-2" style="opacity:.9;">
+          You can change settings anytime — start a new set when ready.
+        </div>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="title">Word Hunt</div>
+      <div class="subtitle">Drag/swipe to connect adjacent letters</div>
+
+      <div class="gridWrap">
+        <div id="gridStage" class="gridStage">
+          <svg id="pathSvg" class="pathSvg" preserveAspectRatio="none">
+            <path id="pathGlow" class="pathLineGlow" d=""></path>
+            <path id="pathMain" class="pathLine" d=""></path>
+          </svg>
+          <div id="grid" class="grid"></div>
+        </div>
+      </div>
+
+      <div class="wordBar">
+        <div id="currentWord" class="wordBox">—</div>
+        <button id="btnEnter" class="btn btnCartoon btnGreen">Enter</button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+
+      <div class="statusLine">
+        <span id="spin" class="spinner"></span>
+        <span id="dictStatus">Dictionary: not loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Set over -->
+  <div id="overlayEnd" class="overlay" aria-hidden="true">
+    <div class="popup">
+      <div class="popTitle">Set over</div>
+      <div id="popMeta" class="popText"></div>
+      <div id="popSetScore" class="popScore">Set score: 0</div>
+      <div class="popSmall">Change settings if you want, then press “Start set”.</div>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button id="popClose" class="btn btnCartoon btnGreen">Back</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const DICT_URL = "https://cdn.jsdelivr.net/gh/dwyl/english-words/words_alpha.txt";
+  const SCORE = { 3:100, 4:400, 5:1200, 6:2000, 7:3000, 8:3600, 9:4000 };
+
+  const els = {
+    setScore: document.getElementById("setScore"),
+    timer: document.getElementById("timer"),
+    gridLabel: document.getElementById("gridLabel"),
+    timeLabel: document.getElementById("timeLabel"),
+    gridSel: document.getElementById("gridSel"),
+    timeSel: document.getElementById("timeSel"),
+    btnStart: document.getElementById("btnStart"),
+    btnClear: document.getElementById("btnClear"),
+    btnEnter: document.getElementById("btnEnter"),
+    currentWord: document.getElementById("currentWord"),
+    feedback: document.getElementById("feedback"),
+    gridStage: document.getElementById("gridStage"),
+    grid: document.getElementById("grid"),
+    spin: document.getElementById("spin"),
+    dictStatus: document.getElementById("dictStatus"),
+
+    pathSvg: document.getElementById("pathSvg"),
+    pathGlow: document.getElementById("pathGlow"),
+    pathMain: document.getElementById("pathMain"),
+
+    overlayEnd: document.getElementById("overlayEnd"),
+    popMeta: document.getElementById("popMeta"),
+    popSetScore: document.getElementById("popSetScore"),
+    popClose: document.getElementById("popClose"),
+  };
+
+  const state = {
+    dictLoaded:false,
+    dict:new Map(), // len -> Set
+
+    n:4,
+    letters:[],
+    found:new Set(),
+    setScore:0,
+
+    secondsTotal:75,
+    secondsLeft:75,
+    timerId:null,
+    running:false,
+
+    selecting:false,
+    pointerId:null,
+    path:[],
+    pathSet:new Set(),
+    pointerPos:null,
+  };
+
+  function setLoading(on, msg){
+    els.spin.classList.toggle("on", !!on);
+    els.dictStatus.textContent = msg;
+  }
+  function cleanWord(w){ return (w||"").trim().toLowerCase(); }
+  function normalizeWord(s){ return cleanWord(s).replace(/[^a-z]/g,""); }
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+  // ✅ VOWEL BOOSTED distribution
+  // extra vowels + common consonants more frequent
+  const LETTERS =
+    "eeeeeeeeeeeeeeeeeeeeeeee" +
+    "aaaaaaaaaaaaaaaa" +
+    "iiiiiiiiiiiiiiii" +
+    "oooooooooooooooo" +
+    "uuuuuuuu" +
+    "nnnnnnnnrrrrrrrrttttttttllllllssssssdddddd" +
+    "ggggbbbbccccmmmmppppffffhhvvwwyy" +
+    "kjxqz";
+  function randomLetter(){ return LETTERS[randInt(0, LETTERS.length-1)]; }
+
+  function idxToRC(idx,n){ return {r:Math.floor(idx/n), c: idx % n}; }
+  function isAdjacent(aIdx,bIdx,n){
+    const a=idxToRC(aIdx,n), b=idxToRC(bIdx,n);
+    return Math.abs(a.r-b.r)<=1 && Math.abs(a.c-b.c)<=1 && !(a.r===b.r && a.c===b.c);
+  }
+
+  function formatTime(sec){
+    const m=Math.floor(sec/60), s=sec%60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+  function paintTimer(){
+    els.timer.textContent = formatTime(state.secondsLeft);
+    els.timer.classList.toggle("low", state.secondsLeft <= 10);
+  }
+
+  function applyLabels(){
+    state.n = Math.max(4, Math.min(8, parseInt(els.gridSel.value,10)));
+    state.secondsTotal = Math.max(15, Math.min(240, parseInt(els.timeSel.value,10)));
+    els.gridLabel.textContent = `${state.n}×${state.n}`;
+    els.timeLabel.textContent = `${state.secondsTotal}s`;
+  }
+
+  async function ensureDictionaryLoaded(){
+    if(state.dictLoaded) return;
+    for(let len=3; len<=9; len++) state.dict.set(len, new Set());
+
+    setLoading(true, "Loading dictionary…");
+    const res = await fetch(DICT_URL, { cache:"force-cache" });
+    if(!res.ok){
+      setLoading(false, "Dictionary failed to load.");
+      throw new Error("HTTP " + res.status);
+    }
+    const text = await res.text();
+    let count=0;
+
+    for(const line of text.split(/\r?\n/)){
+      const w = cleanWord(line);
+      if(!w) continue;
+      if(w.length < 3 || w.length > 9) continue;
+      if(!/^[a-z]+$/.test(w)) continue;
+      const bucket = state.dict.get(w.length);
+      if(bucket && !bucket.has(w)){ bucket.add(w); count++; }
+    }
+
+    state.dictLoaded = true;
+    setLoading(false, `Dictionary ready (${count.toLocaleString()} words, 3–9 letters)`);
+  }
+
+  function buildGrid(){
+    state.letters = Array.from({length: state.n*state.n}, () => randomLetter());
+  }
+
+  function syncSvgViewBox(){
+    const rect = els.gridStage.getBoundingClientRect();
+    els.pathSvg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+    els.pathSvg.setAttribute("width", rect.width);
+    els.pathSvg.setAttribute("height", rect.height);
+  }
+
+  function renderGrid(){
+    els.grid.style.gridTemplateColumns = `repeat(${state.n}, 1fr)`;
+    els.grid.innerHTML = "";
+    for(let i=0;i<state.n*state.n;i++){
+      const d=document.createElement("div");
+      const rClass=["r1","r2","r3","r4"][i%4];
+      d.className=`cell ${rClass}`;
+      d.textContent = state.letters[i].toUpperCase();
+      d.dataset.idx = String(i);
+      els.grid.appendChild(d);
+    }
+    syncSvgViewBox();
+    requestAnimationFrame(syncSvgViewBox);
+  }
+
+  function setFeedback(msg, kind){
+    els.feedback.className = "feedback " + (kind || "");
+    els.feedback.textContent = msg || "";
+  }
+
+  function currentString(){
+    return state.path.map(i => state.letters[i]).join("");
+  }
+  function paintWord(){
+    const w = currentString();
+    els.currentWord.textContent = w ? w.toUpperCase() : "—";
+  }
+
+  function clearSelection(){
+    state.selecting=false;
+    state.pointerId=null;
+    state.path=[];
+    state.pathSet=new Set();
+    state.pointerPos=null;
+    [...els.grid.children].forEach(el => el.classList.remove("active"));
+    paintWord();
+    drawPath();
+  }
+
+  function addToPath(idx){
+    if(state.pathSet.has(idx)) return false;
+    if(state.path.length>0){
+      const last = state.path[state.path.length-1];
+      if(!isAdjacent(last, idx, state.n)) return false;
+    }
+    state.path.push(idx);
+    state.pathSet.add(idx);
+    const cell = els.grid.children[idx];
+    if(cell) cell.classList.add("active");
+    paintWord();
+    drawPath();
+    return true;
+  }
+
+  function stagePointFromEvent(e){
+    const r = els.gridStage.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  function cellCenterInStage(idx){
+    const cell=els.grid.children[idx];
+    if(!cell) return null;
+    const stage=els.gridStage.getBoundingClientRect();
+    const r=cell.getBoundingClientRect();
+    return { x:(r.left+r.right)/2 - stage.left, y:(r.top+r.bottom)/2 - stage.top };
+  }
+  function drawPath(){
+    const pts = [];
+    for(const idx of state.path){
+      const c = cellCenterInStage(idx);
+      if(c) pts.push(c);
+    }
+    if(state.selecting && state.pointerPos && pts.length) pts.push(state.pointerPos);
+
+    if(pts.length < 2){
+      els.pathGlow.setAttribute("d","");
+      els.pathMain.setAttribute("d","");
+      return;
+    }
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for(let i=1;i<pts.length;i++) d += ` L ${pts[i].x} ${pts[i].y}`;
+    els.pathGlow.setAttribute("d", d);
+    els.pathMain.setAttribute("d", d);
+  }
+
+  function pickCellIndexAt(clientX, clientY){
+    const el = document.elementFromPoint(clientX, clientY);
+    if(!el) return null;
+    const cell = el.closest(".cell");
+    if(!cell) return null;
+    if(!els.grid.contains(cell)) return null;
+    const idx = parseInt(cell.dataset.idx, 10);
+    return Number.isFinite(idx) ? idx : null;
+  }
+
+  function onStagePointerDown(e){
+    if(!state.running) return; // only drag during active set
+    if(e.pointerType==="mouse" && e.button!==0) return;
+    e.preventDefault();
+
+    clearSelection();
+    state.selecting=true;
+    state.pointerId=e.pointerId;
+
+    try{ els.gridStage.setPointerCapture(e.pointerId); }catch(_){}
+    state.pointerPos = stagePointFromEvent(e);
+
+    const idx = pickCellIndexAt(e.clientX, e.clientY);
+    if(idx!==null) addToPath(idx);
+    drawPath();
+  }
+
+  function onStagePointerMove(e){
+    if(!state.selecting || !state.running) return;
+    if(state.pointerId!==null && e.pointerId!==state.pointerId) return;
+    e.preventDefault();
+
+    state.pointerPos = stagePointFromEvent(e);
+
+    const idx = pickCellIndexAt(e.clientX, e.clientY);
+    if(idx!==null) addToPath(idx);
+    drawPath();
+  }
+
+  function onStagePointerUp(e){
+    if(!state.running) return;
+    if(state.pointerId!==null && e.pointerId!==state.pointerId) return;
+    e.preventDefault();
+    try{ els.gridStage.releasePointerCapture(e.pointerId); }catch(_){}
+
+    const w = normalizeWord(currentString());
+    if(w.length >= 3) submitWord(w);
+    else { clearSelection(); setFeedback("",""); }
+  }
+
+  function resetSetScore(){
+    state.setScore=0;
+    els.setScore.textContent="0";
+  }
+
+  function startSet(){
+    // start a fresh set with current settings
+    applyLabels();
+    clearInterval(state.timerId);
+    state.secondsLeft = state.secondsTotal;
+    paintTimer();
+
+    resetSetScore();
+    state.found.clear();
+    setFeedback("", "");
+    clearSelection();
+
+    buildGrid();
+    renderGrid();
+
+    state.running = true;
+    state.timerId = setInterval(() => {
+      state.secondsLeft--;
+      if(state.secondsLeft <= 0){
+        state.secondsLeft = 0;
+        paintTimer();
+        clearInterval(state.timerId);
+        endSet();
+        return;
+      }
+      paintTimer();
+    }, 1000);
+  }
+
+  function endSet(){
+    // ✅ IMPORTANT: do NOT lock settings — keep them usable
+    state.running = false;
+    clearSelection();
+
+    els.popMeta.textContent = `Grid: ${state.n}×${state.n} • Time: ${state.secondsTotal}s`;
+    els.popSetScore.textContent = `Set score: ${state.setScore}`;
+    els.overlayEnd.classList.add("on");
+    els.overlayEnd.setAttribute("aria-hidden","false");
+  }
+
+  function hideEnd(){
+    els.overlayEnd.classList.remove("on");
+    els.overlayEnd.setAttribute("aria-hidden","true");
+  }
+
+  function invalid(){ setFeedback("Invalid word","bad"); }
+  function already(){ setFeedback("Already used","bad"); }
+
+  function submitWord(w){
+    clearSelection();
+
+    if(!w || w.length < 3 || w.length > 9) return invalid();
+    if(state.found.has(w)) return already();
+
+    const bucket = state.dict.get(w.length);
+    if(!bucket || !bucket.has(w)) return invalid();
+
+    state.found.add(w);
+    const pts = SCORE[w.length] ?? 0;
+    state.setScore += pts;
+    els.setScore.textContent = String(state.setScore);
+    setFeedback(`+${pts}!`, "good");
+  }
+
+  function submitCurrent(){
+    if(!state.running) return;
+    const w = normalizeWord(currentString());
+    submitWord(w);
+  }
+
+  // events
+  els.btnStart.addEventListener("click", startSet);
+  els.btnClear.addEventListener("click", () => { clearSelection(); setFeedback("",""); });
+  els.btnEnter.addEventListener("click", submitCurrent);
+
+  els.popClose.addEventListener("click", hideEnd);
+  els.overlayEnd.addEventListener("click", (e)=>{ if(e.target===els.overlayEnd) hideEnd(); });
+
+  els.gridStage.addEventListener("pointerdown", onStagePointerDown, { passive:false });
+  els.gridStage.addEventListener("pointermove", onStagePointerMove, { passive:false });
+  els.gridStage.addEventListener("pointerup", onStagePointerUp, { passive:false });
+  els.gridStage.addEventListener("pointercancel", ()=>clearSelection(), { passive:false });
+  els.gridStage.addEventListener("contextmenu", (e)=>e.preventDefault());
+
+  window.addEventListener("resize", ()=>{ syncSvgViewBox(); drawPath(); });
+
+  // init
+  (async()=>{
+    await ensureDictionaryLoaded();
+    applyLabels();
+    paintTimer();
+    buildGrid();
+    renderGrid();
+    setFeedback("Press “Start set” to begin.", "");
+  })();
+</script>
+</body>
+</html>
