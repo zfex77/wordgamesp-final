@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Anagrams — Starry Purple (Set Score)</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ink:#ffffff;
+      --muted: rgba(255,255,255,.78);
+
+      --purple0:#04000c;
+      --purple1:#120026;
+      --purple2:#240650;
+      --purple3:#4c1d95;
+
+      --panel: rgba(14,7,33,.92);
+      --stroke: rgba(255,255,255,.14);
+
+      --accent:#a855f7;
+      --accent2:#7c3aed;
+
+      --tileStroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 40px rgba(0,0,0,.55);
+
+      --rBig: 26px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      min-height:100vh;
+      margin:0;
+      font-family:"Baloo 2", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--ink);
+      display:grid;
+      place-items:center;
+      padding: 18px 14px 28px;
+      background: linear-gradient(160deg, var(--purple0), var(--purple1) 30%, var(--purple2) 60%, var(--purple3));
+      overflow:hidden;
+    }
+
+    /* Animated starfield (dense) */
+    .stars, .stars2, .stars3{
+      position:fixed;
+      inset:-260px;
+      pointer-events:none;
+      z-index:-1;
+      background-repeat: repeat;
+      animation: drift 55s linear infinite;
+      opacity: .95;
+    }
+    .stars{
+      background-image:
+        radial-gradient(1.1px 1.1px at 12px 20px, rgba(255,255,255,.92) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 40px 90px, rgba(255,255,255,.72) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 80px 60px, rgba(255,255,255,.83) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 110px 140px, rgba(255,255,255,.70) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 140px 120px, rgba(255,255,255,.78) 50%, transparent 52%),
+        radial-gradient(1.2px 1.2px at 170px 30px, rgba(255,255,255,.88) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 210px 40px, rgba(255,255,255,.90) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 240px 150px, rgba(255,255,255,.70) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 260px 160px, rgba(255,255,255,.76) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 290px 60px, rgba(255,255,255,.80) 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 330px 90px, rgba(255,255,255,.84) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 350px 170px, rgba(255,255,255,.68) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 30px 170px, rgba(255,255,255,.72) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 200px 210px, rgba(255,255,255,.70) 50%, transparent 52%),
+        radial-gradient(1.0px 1.0px at 310px 210px, rgba(255,255,255,.70) 50%, transparent 52%);
+      background-size: 380px 240px;
+    }
+    .stars2{
+      background-image:
+        radial-gradient(1.6px 1.6px at 18px 50px, rgba(255,255,255,.58) 50%, transparent 52%),
+        radial-gradient(1.4px 1.4px at 70px 130px, rgba(255,255,255,.50) 50%, transparent 52%),
+        radial-gradient(1.4px 1.4px at 120px 90px, rgba(255,255,255,.54) 50%, transparent 52%),
+        radial-gradient(1.5px 1.5px at 165px 175px, rgba(255,255,255,.46) 50%, transparent 52%),
+        radial-gradient(1.5px 1.5px at 210px 160px, rgba(255,255,255,.48) 50%, transparent 52%),
+        radial-gradient(1.6px 1.6px at 250px 70px, rgba(255,255,255,.54) 50%, transparent 52%),
+        radial-gradient(1.6px 1.6px at 300px 30px, rgba(255,255,255,.56) 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 340px 140px, rgba(255,255,255,.48) 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 360px 200px, rgba(255,255,255,.44) 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 40px 210px, rgba(255,255,255,.44) 50%, transparent 52%);
+      background-size: 420px 300px;
+      opacity: .62;
+      animation-duration: 92s;
+      animation-direction: reverse;
+    }
+    .stars3{
+      background-image:
+        radial-gradient(2.1px 2.1px at 30px 70px, rgba(168,85,247,.48) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 95px 35px, rgba(124,58,237,.44) 50%, transparent 52%),
+        radial-gradient(2.2px 2.2px at 170px 190px, rgba(192,132,252,.38) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 240px 105px, rgba(168,85,247,.38) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 320px 155px, rgba(124,58,237,.36) 50%, transparent 52%),
+        radial-gradient(2.0px 2.0px at 380px 65px, rgba(168,85,247,.34) 50%, transparent 52%);
+      background-size: 520px 380px;
+      opacity: .34;
+      animation-duration: 132s;
+    }
+    @keyframes drift{
+      from{ transform: translate3d(0,0,0); }
+      to{ transform: translate3d(-300px, -220px, 0); }
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.10;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      background-size: 260px 260px;
+      z-index:-1;
+    }
+
+    .wrap{ width: min(920px, 100%); position:relative; }
+
+    /* INFO BUTTON moved up-left so it doesn't block dropdowns */
+    .infoCorner{
+      position:absolute;
+      top: -22px;
+      right: 14px;
+      z-index: 5;
+    }
+
+    .top{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 860px){ .top{ grid-template-columns: 1fr; } }
+
+    /* Slightly diverse shapes: different radii per panel */
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    .panel.scorePanel{ border-radius: 28px 22px 28px 22px; }
+    .panel.controlsPanel{ border-radius: 22px 30px 22px 30px; }
+
+    .label{ color: var(--muted); font-size: 1.05rem; line-height:1; }
+
+    .scoreBig{
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: .5px;
+      line-height: 1.05;
+      margin-top: 4px;
+      text-shadow: 0 2px 0 rgba(0,0,0,.25);
+    }
+
+    .hudRow{
+      display:flex; gap: 10px; flex-wrap:wrap; margin-top: 8px; align-items:center;
+    }
+
+    .pill{
+      display:flex; align-items:center; gap: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.02rem;
+      color: var(--muted);
+    }
+
+    .timer{ color:#fff; font-weight:800; }
+    .timer.low{ color:#ff4d7d; }
+
+    .rowx{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px; flex-wrap:wrap;
+    }
+
+    select.select{
+      appearance:auto;
+      border-radius: 18px !important; /* slightly less pill-y */
+      border: 1px solid rgba(255,255,255,.16) !important;
+      background-color: rgba(255,255,255,.05) !important;
+      color: #fff !important;
+      font-weight: 800 !important;
+      padding: 8px 14px !important;
+      min-width: 120px;
+    }
+    select.select option{ color:#111; background:#fff; }
+
+    .btnCartoon{
+      border-radius: 18px !important; /* slight variety vs pills */
+      font-weight: 800 !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      padding: 10px 14px !important;
+      box-shadow: 0 8px 0 rgba(0,0,0,.35) !important;
+      transform: translateY(0);
+      transition: transform .06s ease;
+      letter-spacing:.2px;
+    }
+    .btnCartoon:active{
+      transform: translateY(2px);
+      box-shadow: 0 6px 0 rgba(0,0,0,.35) !important;
+    }
+
+    .btnPurple{
+      background: linear-gradient(180deg, var(--accent), var(--accent2)) !important;
+      color: #fff !important;
+      border: 0 !important;
+    }
+    .btnGhost{
+      background: rgba(255,255,255,.05) !important;
+      border: 1px solid rgba(255,255,255,.16) !important;
+      color: #fff !important;
+      box-shadow: 0 8px 0 rgba(0,0,0,.28) !important;
+    }
+
+    .iconBtn{
+      width: 44px; height: 44px;
+      border-radius: 16px !important; /* match slightly varied shapes */
+      display:grid; place-items:center;
+      font-size: 1.15rem; font-weight: 800;
+      line-height: 1;
+    }
+
+    /* Responsive panel sizing */
+    .board{
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 30px 22px 30px 22px;
+      box-shadow: var(--shadow);
+      padding: clamp(12px, 2.3vw, 18px);
+    }
+
+    .title{
+      text-align:center;
+      font-size: clamp(1.55rem, 3.6vw, 1.95rem);
+      font-weight: 800;
+      letter-spacing:.2px;
+      color:#fff;
+    }
+    .subtitle{
+      text-align:center;
+      color: rgba(255,255,255,.75);
+      font-size: clamp(.98rem, 2.7vw, 1.06rem);
+      margin-top: 3px;
+    }
+
+    .tiles{
+      display:flex; justify-content:center; flex-wrap:wrap;
+      gap: clamp(8px, 1.6vw, 10px);
+      padding: 16px 0 14px;
+      min-height: 92px;
+    }
+
+    /* Responsive tiles (bigger on phones; shrink on huge screens) */
+    .tile{
+      width: clamp(52px, 10.5vw, 64px);
+      height: clamp(52px, 10.5vw, 64px);
+      border-radius: clamp(16px, 3.5vw, 22px);
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(0,0,0,.18));
+      border: 1px solid var(--tileStroke);
+      box-shadow: 0 10px 0 rgba(0,0,0,.30);
+      display:grid; place-items:center;
+      font-size: clamp(1.35rem, 4.2vw, 1.75rem);
+      font-weight: 800;
+      letter-spacing: 1px;
+      user-select:none;
+      color:#fff;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tile:active{
+      transform: translateY(2px);
+      box-shadow: 0 8px 0 rgba(0,0,0,.30);
+    }
+    .tile.used{
+      opacity:.35;
+      transform:none;
+      box-shadow: 0 10px 0 rgba(0,0,0,.30);
+      cursor: default;
+    }
+
+    .guessRow{
+      display:flex; justify-content:center; align-items:center;
+      gap: 10px; flex-wrap:wrap;
+      margin-top: 2px;
+    }
+
+    .guess{
+      width: min(560px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      padding: 12px 16px;
+      font-size: clamp(1.05rem, 3.4vw, 1.15rem);
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align:center;
+      outline:none;
+      color:#fff;
+    }
+    .guess::placeholder{ color: rgba(255,255,255,.55); }
+    .guess:focus{
+      border-color: rgba(168,85,247,.55);
+      box-shadow: 0 0 0 6px rgba(168,85,247,.16);
+    }
+
+    .feedback{
+      text-align:center;
+      margin-top: 10px;
+      min-height: 30px;
+      font-size: 1.12rem;
+      font-weight: 800;
+    }
+    .good{ color: #55f09a; }
+    .bad{ color: #ff4d7d; }
+
+    .statusLine{
+      margin-top: 10px;
+      text-align:center;
+      color: rgba(255,255,255,.80);
+      font-size: .98rem;
+      display:flex; justify-content:center; align-items:center; gap: 8px;
+    }
+    .spinner{
+      width: 16px; height:16px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.25);
+      border-top-color: rgba(255,255,255,.9);
+      animation: spin .8s linear infinite;
+      display:none;
+    }
+    .spinner.on{ display:inline-block; }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    /* overlays */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      place-items:center;
+      z-index: 999;
+      padding: 18px;
+    }
+    .overlay.on{ display:grid; }
+
+    .popup{
+      width: min(560px, 100%);
+      background: rgba(14,7,33,.96);
+      border-radius: 30px 22px 30px 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 22px 60px rgba(0,0,0,.65);
+      padding: 16px 16px 14px;
+      color:#fff;
+    }
+
+    .popTitle{ font-size: 1.7rem; font-weight: 800; text-align:center; margin-bottom: 4px; }
+    .popText{ text-align:center; color: rgba(255,255,255,.78); font-size: 1.05rem; }
+    .popScore{ text-align:center; font-size: 2.3rem; font-weight: 800; margin: 10px 0 6px; }
+    .popSmall{ text-align:center; color: rgba(255,255,255,.78); font-size: 1.0rem; margin-bottom: 12px; }
+
+    .scoreGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .scoreRow{
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
+      padding: 10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size: 1.05rem;
+    }
+    .badgePts{
+      border-radius: 999px;
+      padding: 4px 10px;
+      border: 1px solid rgba(168,85,247,.35);
+      background: rgba(168,85,247,.12);
+      font-weight: 800;
+    }
+
+    .field{
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      padding: 10px 14px;
+      color:#fff;
+      font-weight: 800;
+      outline:none;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .field::placeholder{ color: rgba(255,255,255,.55); letter-spacing: 1px; }
+    .field:focus{
+      border-color: rgba(168,85,247,.55);
+      box-shadow: 0 0 0 6px rgba(168,85,247,.16);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+
+  <div class="wrap">
+    <div class="infoCorner">
+      <button id="btnInfo" class="btn btnCartoon btnGhost iconBtn" title="Info">ⓘ</button>
+    </div>
+
+    <div class="top">
+      <div class="panel scorePanel">
+        <div class="label">Set Score</div>
+        <div id="setScore" class="scoreBig">0</div>
+
+        <div class="hudRow">
+          <div class="pill">
+            <span>⏱</span>
+            <span id="timer" class="timer">1:15</span>
+          </div>
+          <div class="pill">
+            <span>Base length</span>
+            <span id="baseLenLabel" style="font-weight:800;color:#fff;">6</span>
+          </div>
+          <div class="pill">
+            <span>Time</span>
+            <span id="timeLabel" style="font-weight:800;color:#fff;">75s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel controlsPanel">
+        <div class="rowx">
+          <div class="label">Base length (6–9)</div>
+          <select id="lenSel" class="form-select select" style="width:auto;">
+            <option value="6" selected>6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+
+        <div class="rowx mt-2">
+          <div class="label">Set time</div>
+          <select id="timeSel" class="form-select select" style="width:auto;">
+            <option value="30">30s</option>
+            <option value="45">45s</option>
+            <option value="60">60s</option>
+            <option value="75" selected>75s</option>
+            <option value="90">90s</option>
+          </select>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <button id="btnNext" class="btn btnCartoon btnPurple">Next set</button>
+          <button id="btnShuffle" class="btn btnCartoon btnGhost">Shuffle</button>
+          <button id="btnCustom" class="btn btnCartoon btnGhost">Custom word</button>
+        </div>
+
+        <div class="label mt-2" style="opacity:.9;">
+          Tap tiles on mobile to build a word.
+        </div>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="title">Anagrams</div>
+      <div class="subtitle">Make any 3+ letter word with the provided letters</div>
+
+      <div id="tiles" class="tiles" aria-label="Scrambled letters"></div>
+
+      <div class="guessRow">
+        <input id="guess" class="guess" autocomplete="off" spellcheck="false" placeholder="TYPE A WORD" />
+        <button id="btnEnter" class="btn btnCartoon btnPurple">Enter</button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+
+      <div class="statusLine">
+        <span id="spin" class="spinner"></span>
+        <span id="dictStatus">Dictionary: not loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round-end overlay -->
+  <div id="overlayRound" class="overlay" aria-hidden="true">
+    <div class="popup">
+      <div class="popTitle">Set over</div>
+      <div id="popWord" class="popText"></div>
+      <div id="popSetScore" class="popScore">Set score: 0</div>
+      <div class="popSmall">Press “Next set” to continue (you can change settings first).</div>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button id="popNext" class="btn btnCartoon btnPurple">Next set</button>
+        <button id="popClose" class="btn btnCartoon btnGhost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info overlay -->
+  <div id="overlayInfo" class="overlay" aria-hidden="true">
+    <div class="popup">
+      <div class="popTitle">Scoring</div>
+      <div class="popText">Points are awarded per unique word three letters or more in length.</div>
+
+      <div class="scoreGrid" aria-label="Score table">
+        <div class="scoreRow"><b>3 letters</b><span class="badgePts">100</span></div>
+        <div class="scoreRow"><b>4 letters</b><span class="badgePts">400</span></div>
+        <div class="scoreRow"><b>5 letters</b><span class="badgePts">1200</span></div>
+        <div class="scoreRow"><b>6 letters</b><span class="badgePts">2000</span></div>
+        <div class="scoreRow"><b>7 letters</b><span class="badgePts">3000</span></div>
+        <div class="scoreRow"><b>8 letters</b><span class="badgePts">3600</span></div>
+        <div class="scoreRow"><b>9 letters</b><span class="badgePts">4000</span></div>
+      </div>
+
+      <div class="popSmall" style="margin-top:10px;">
+        Duplicates don’t score.
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <button id="infoClose" class="btn btnCartoon btnPurple">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom word overlay -->
+  <div id="overlayCustom" class="overlay" aria-hidden="true">
+    <div class="popup">
+      <div class="popTitle">Custom base word</div>
+      <div class="popText">Enter a word (6–9 letters). It must exist in the dictionary.</div>
+
+      <div class="mt-3">
+        <input id="customInput" class="field" placeholder="E.G. TALERS" maxlength="9" />
+      </div>
+
+      <div id="customMsg" class="popSmall" style="min-height:24px;margin-top:10px;"></div>
+
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button id="customStart" class="btn btnCartoon btnPurple">Start set</button>
+        <button id="customCancel" class="btn btnCartoon btnGhost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const DICT_URL = "https://cdn.jsdelivr.net/gh/dwyl/english-words/words_alpha.txt";
+  const SCORE = { 3:100, 4:400, 5:1200, 6:2000, 7:3000, 8:3600, 9:4000 };
+
+  const els = {
+    setScore: document.getElementById("setScore"),
+    timer: document.getElementById("timer"),
+    baseLenLabel: document.getElementById("baseLenLabel"),
+    timeLabel: document.getElementById("timeLabel"),
+    lenSel: document.getElementById("lenSel"),
+    timeSel: document.getElementById("timeSel"),
+
+    tiles: document.getElementById("tiles"),
+    guess: document.getElementById("guess"),
+    feedback: document.getElementById("feedback"),
+
+    btnNext: document.getElementById("btnNext"),
+    btnShuffle: document.getElementById("btnShuffle"),
+    btnEnter: document.getElementById("btnEnter"),
+    btnInfo: document.getElementById("btnInfo"),
+    btnCustom: document.getElementById("btnCustom"),
+
+    spin: document.getElementById("spin"),
+    dictStatus: document.getElementById("dictStatus"),
+
+    overlayRound: document.getElementById("overlayRound"),
+    popWord: document.getElementById("popWord"),
+    popSetScore: document.getElementById("popSetScore"),
+    popNext: document.getElementById("popNext"),
+    popClose: document.getElementById("popClose"),
+
+    overlayInfo: document.getElementById("overlayInfo"),
+    infoClose: document.getElementById("infoClose"),
+
+    overlayCustom: document.getElementById("overlayCustom"),
+    customInput: document.getElementById("customInput"),
+    customMsg: document.getElementById("customMsg"),
+    customStart: document.getElementById("customStart"),
+    customCancel: document.getElementById("customCancel"),
+  };
+
+  const state = {
+    dictLoaded: false,
+    dict: new Map(), // length -> Set(words)
+
+    baseWord: "",
+    letters: [],
+    baseBag: null,
+    found: new Set(),
+
+    // tile-tap word builder
+    pickedIdx: [],      // indices chosen in this attempt
+    pickedCount: null,  // Map letter-> count chosen (derived from pickedIdx)
+
+    setScore: 0,
+
+    secondsLeft: 75,
+    secondsTotal: 75,
+    timerId: null,
+    locked: false
+  };
+
+  function setLoading(on, msg){
+    els.spin.classList.toggle("on", !!on);
+    els.dictStatus.textContent = msg;
+  }
+
+  function randInt(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function shuffleArray(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function cleanWord(w){ return (w || "").trim().toLowerCase(); }
+  function normalizeGuess(s){ return cleanWord(s).replace(/[^a-z]/g,""); }
+
+  function buildBag(letters){
+    const bag = new Map();
+    for(const ch of letters) bag.set(ch, (bag.get(ch)||0)+1);
+    return bag;
+  }
+
+  function canMake(word, bag){
+    const need = new Map();
+    for(const ch of word) need.set(ch, (need.get(ch)||0)+1);
+    for(const [ch, n] of need){
+      if((bag.get(ch)||0) < n) return false;
+    }
+    return true;
+  }
+
+  function setFeedback(msg, kind){
+    els.feedback.className = "feedback " + (kind || "");
+    els.feedback.textContent = msg || "";
+  }
+
+  function lockUI(on){
+    state.locked = on;
+    els.btnEnter.disabled = on;
+    els.btnShuffle.disabled = on;
+    els.guess.disabled = on;
+  }
+
+  function formatTime(sec){
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  function paintTimer(){
+    els.timer.textContent = formatTime(state.secondsLeft);
+    els.timer.classList.toggle("low", state.secondsLeft <= 10);
+  }
+
+  function getBaseLen(){
+    const v = parseInt(els.lenSel.value, 10);
+    return Math.min(9, Math.max(6, v));
+  }
+
+  function getSetSeconds(){
+    const v = parseInt(els.timeSel.value, 10);
+    return Math.max(15, Math.min(180, v));
+  }
+
+  function applyLabels(){
+    els.baseLenLabel.textContent = String(getBaseLen());
+    els.timeLabel.textContent = `${getSetSeconds()}s`;
+  }
+
+  function resetTimer(){
+    clearInterval(state.timerId);
+    state.secondsTotal = getSetSeconds();
+    state.secondsLeft = state.secondsTotal;
+    paintTimer();
+  }
+
+  function startTimer(){
+    clearInterval(state.timerId);
+    state.timerId = setInterval(() => {
+      if(state.locked) return;
+      state.secondsLeft--;
+      if(state.secondsLeft <= 0){
+        state.secondsLeft = 0;
+        paintTimer();
+        clearInterval(state.timerId);
+        endSet();
+        return;
+      }
+      paintTimer();
+    }, 1000);
+  }
+
+  // Scramble rule: keep LAST letter fixed
+  function makeScrambleKeepLast(word){
+    const letters = word.split("");
+    if(letters.length <= 1) return letters;
+    const last = letters[letters.length - 1];
+    const head = letters.slice(0, -1);
+
+    let scrHead = [...head];
+    let tries = 0;
+    do{
+      scrHead = shuffleArray([...head]);
+      tries++;
+    }while(scrHead.join("") === head.join("") && tries < 12);
+
+    return [...scrHead, last];
+  }
+
+  async function ensureDictionaryLoaded(){
+    if(state.dictLoaded) return;
+
+    for(let len = 3; len <= 9; len++) state.dict.set(len, new Set());
+
+    setLoading(true, "Loading dictionary…");
+    try{
+      const res = await fetch(DICT_URL, { cache: "force-cache" });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+
+      const text = await res.text();
+      const lines = text.split(/\r?\n/);
+
+      for(const line of lines){
+        const w = cleanWord(line);
+        if(!w) continue;
+        if(w.length < 3 || w.length > 9) continue;
+        if(!/^[a-z]+$/.test(w)) continue;
+        state.dict.get(w.length).add(w);
+      }
+
+      state.dictLoaded = true;
+      setLoading(false, "Dictionary ready");
+    }catch(err){
+      console.error(err);
+      setLoading(false, "Dictionary failed to load. Run from a local server / check network.");
+      throw err;
+    }
+  }
+
+  function pickRandomBaseWord(len){
+    const arr = Array.from(state.dict.get(len));
+    if(arr.length === 0) return "";
+    return arr[randInt(0, arr.length - 1)];
+  }
+
+  function show(el){ el.classList.add("on"); el.setAttribute("aria-hidden","false"); }
+  function hide(el){ el.classList.remove("on"); el.setAttribute("aria-hidden","true"); }
+
+  function resetSetScore(){
+    state.setScore = 0;
+    els.setScore.textContent = "0";
+  }
+
+  // --- Tile tap builder helpers ---
+  function clearPickedTiles(){
+    state.pickedIdx = [];
+    // remove "used" class from tiles
+    [...els.tiles.children].forEach(t => t.classList.remove("used"));
+  }
+
+  function updateGuessFromTiles(){
+    let word = "";
+    for(const idx of state.pickedIdx){
+      const ch = state.letters[idx];
+      word += ch;
+    }
+    els.guess.value = word.toUpperCase();
+  }
+
+  function onTileTap(idx){
+    if(state.locked) return;
+
+    const tileEl = els.tiles.children[idx];
+    if(!tileEl) return;
+
+    // if already picked, ignore (simple behavior)
+    if(tileEl.classList.contains("used")) return;
+
+    tileEl.classList.add("used");
+    state.pickedIdx.push(idx);
+    updateGuessFromTiles();
+    els.guess.focus();
+  }
+
+  function renderTiles(letters){
+    els.tiles.innerHTML = "";
+    clearPickedTiles();
+
+    letters.forEach((ch, idx) => {
+      const d = document.createElement("div");
+      d.className = "tile";
+      d.textContent = ch.toUpperCase();
+      d.setAttribute("role","button");
+      d.setAttribute("aria-label", `Letter ${ch.toUpperCase()}`);
+      d.addEventListener("click", () => onTileTap(idx));
+      els.tiles.appendChild(d);
+    });
+  }
+
+  // If user starts typing manually, clear tile selection (so it doesn't fight them)
+  function onManualTyping(){
+    // only clear if there are picked tiles
+    if(state.pickedIdx.length){
+      clearPickedTiles();
+    }
+  }
+
+  async function startNewSet(forcedWord = null){
+    hide(els.overlayRound);
+    lockUI(true);
+    setFeedback("", "");
+    els.guess.value = "";
+    state.found.clear();
+    resetSetScore();
+    clearPickedTiles();
+
+    await ensureDictionaryLoaded();
+    applyLabels();
+
+    const baseLen = getBaseLen();
+    let base = forcedWord ? cleanWord(forcedWord) : pickRandomBaseWord(baseLen);
+
+    if(!base){
+      setFeedback("Invalid word", "bad");
+      lockUI(false);
+      return;
+    }
+
+    if(forcedWord){
+      if(base.length < 6 || base.length > 9){
+        setFeedback("Invalid word", "bad");
+        lockUI(false);
+        return;
+      }
+      const set = state.dict.get(base.length);
+      if(!set || !set.has(base)){
+        setFeedback("Invalid word", "bad");
+        lockUI(false);
+        return;
+      }
+      els.lenSel.value = String(base.length);
+      applyLabels();
+    }
+
+    state.baseWord = base;
+    state.baseBag = buildBag(base.split(""));
+    state.letters = makeScrambleKeepLast(base);
+    renderTiles(state.letters);
+
+    resetTimer();
+    lockUI(false);
+    els.guess.focus();
+    startTimer();
+  }
+
+  function endSet(){
+    lockUI(true);
+    clearInterval(state.timerId);
+
+    els.popWord.textContent = `Base word was ${state.baseWord.toUpperCase()}`;
+    els.popSetScore.textContent = `Set score: ${state.setScore}`;
+
+    show(els.overlayRound);
+  }
+
+  function doShuffle(){
+    if(!state.letters.length) return;
+    const last = state.letters[state.letters.length - 1];
+    const head = shuffleArray(state.letters.slice(0, -1));
+    state.letters = [...head, last];
+    renderTiles(state.letters);
+  }
+
+  function invalid(){
+    setFeedback("Invalid word", "bad");
+  }
+
+  function submit(){
+    if(state.locked) return;
+
+    const raw = els.guess.value;
+    const g = normalizeGuess(raw);
+
+    // clear input + tile selection after attempt
+    els.guess.value = "";
+    clearPickedTiles();
+
+    if(!g) return invalid();
+
+    const L = g.length;
+    const baseLen = state.baseWord.length;
+
+    if(L < 3 || L > baseLen || L > 9) return invalid();
+
+    if(state.found.has(g)){
+      setFeedback("Already used", "bad");
+      return;
+    }
+
+    const set = state.dict.get(L);
+    if(!set || !set.has(g)) return invalid();
+
+    if(!canMake(g, state.baseBag)) return invalid();
+
+    state.found.add(g);
+
+    const pts = SCORE[L] ?? 0;
+    state.setScore += pts;
+    els.setScore.textContent = String(state.setScore);
+
+    setFeedback(`+${pts}!`, "good");
+  }
+
+  // ===== Events =====
+  els.btnEnter.addEventListener("click", submit);
+  els.btnShuffle.addEventListener("click", doShuffle);
+
+  els.btnNext.addEventListener("click", () => {
+    clearInterval(state.timerId);
+    endSet();
+  });
+
+  els.popNext.addEventListener("click", async () => {
+    await startNewSet();
+  });
+  els.popClose.addEventListener("click", () => hide(els.overlayRound));
+
+  els.btnInfo.addEventListener("click", () => show(els.overlayInfo));
+  els.infoClose.addEventListener("click", () => hide(els.overlayInfo));
+  els.overlayInfo.addEventListener("click", (e) => { if(e.target === els.overlayInfo) hide(els.overlayInfo); });
+
+  els.btnCustom.addEventListener("click", () => {
+    els.customInput.value = "";
+    els.customMsg.textContent = "";
+    show(els.overlayCustom);
+    setTimeout(() => els.customInput.focus(), 50);
+  });
+  els.customCancel.addEventListener("click", () => hide(els.overlayCustom));
+  els.overlayCustom.addEventListener("click", (e) => { if(e.target === els.overlayCustom) hide(els.overlayCustom); });
+
+  els.customInput.addEventListener("input", () => {
+    const cur = normalizeGuess(els.customInput.value);
+    els.customInput.value = cur.slice(0, 9).toUpperCase();
+  });
+
+  els.customStart.addEventListener("click", async () => {
+    const w = normalizeGuess(els.customInput.value);
+    if(!w){
+      els.customMsg.textContent = "Invalid word";
+      return;
+    }
+    await ensureDictionaryLoaded();
+    if(w.length < 6 || w.length > 9){
+      els.customMsg.textContent = "Invalid word";
+      return;
+    }
+    const set = state.dict.get(w.length);
+    if(!set || !set.has(w)){
+      els.customMsg.textContent = "Invalid word";
+      return;
+    }
+    hide(els.overlayCustom);
+    await startNewSet(w);
+  });
+
+  els.lenSel.addEventListener("change", applyLabels);
+  els.timeSel.addEventListener("change", applyLabels);
+
+  els.guess.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); submit(); }
+    if(e.key === "Escape"){
+      e.preventDefault();
+      els.guess.value="";
+      clearPickedTiles();
+      setFeedback("", "");
+    }
+    // Backspace behavior for tile-tap word:
+    // If they built by tapping and press backspace, remove last picked tile.
+    if(e.key === "Backspace" && state.pickedIdx.length && els.guess.value.length){
+      e.preventDefault();
+      const lastIdx = state.pickedIdx.pop();
+      const tileEl = els.tiles.children[lastIdx];
+      if(tileEl) tileEl.classList.remove("used");
+      updateGuessFromTiles();
+    }
+  });
+
+  els.guess.addEventListener("input", () => {
+    // If they type manually, clear tile picks
+    onManualTyping();
+    const cur = normalizeGuess(els.guess.value);
+    els.guess.value = cur.slice(0, 9).toUpperCase();
+  });
+
+  els.overlayRound.addEventListener("click", (e) => { if(e.target === els.overlayRound) hide(els.overlayRound); });
+
+  // ===== Init =====
+  (async () => {
+    applyLabels();
+    paintTimer();
+    resetSetScore();
+    await startNewSet();
+  })();
+</script>
+</body>
+</html>
