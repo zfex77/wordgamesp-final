@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Word Bites — Blue (Auto Score, No Clearing)</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#fff;
+    --muted:rgba(255,255,255,.78);
+
+    --b0:#020816;
+    --b1:#071a3a;
+    --b2:#0b2c66;
+    --b3:#1d4ed8;
+
+    --panel: rgba(6,12,30,.90);
+    --stroke: rgba(255,255,255,.14);
+
+    --accent:#60a5fa;
+    --accent2:#2563eb;
+    --glow:#22d3ee;
+
+    --shadow: 0 18px 40px rgba(0,0,0,.55);
+
+    /* set by JS */
+    --cell: 48px;
+    --gap: 6px;
+    --radius: 16px;
+    --tileRadius: 18px;
+  }
+
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; overscroll-behavior:none; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Baloo 2", system-ui;
+    color:var(--ink);
+    display:grid;
+    place-items:center;
+    padding:18px 14px 28px;
+    background:linear-gradient(160deg,var(--b0),var(--b1) 30%,var(--b2) 60%,var(--b3));
+    overflow:hidden;
+    touch-action:none;
+  }
+
+  .aurora{
+    position:fixed; inset:-20%;
+    z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(900px 520px at 18% 30%, rgba(96,165,250,.22), transparent 60%),
+      radial-gradient(760px 500px at 85% 28%, rgba(34,211,238,.16), transparent 65%),
+      radial-gradient(900px 560px at 55% 90%, rgba(37,99,235,.16), transparent 70%);
+    filter: blur(10px);
+    opacity:.9;
+    animation: aur 10s ease-in-out infinite alternate;
+  }
+  @keyframes aur{ from{ transform:translate3d(-10px,-6px,0) } to{ transform:translate3d(10px,6px,0)} }
+
+  .stars,.stars2,.stars3{
+    position:fixed; inset:-260px; pointer-events:none; z-index:-1;
+    background-repeat:repeat; animation: drift 90s linear infinite;
+  }
+  .stars{
+    opacity:.85;
+    background-image:
+      radial-gradient(1px 1px at 20px 40px, rgba(255,255,255,.85) 50%, transparent 52%),
+      radial-gradient(1px 1px at 140px 90px, rgba(255,255,255,.75) 50%, transparent 52%),
+      radial-gradient(1px 1px at 260px 160px, rgba(255,255,255,.70) 50%, transparent 52%),
+      radial-gradient(1px 1px at 320px 30px, rgba(255,255,255,.82) 50%, transparent 52%),
+      radial-gradient(1px 1px at 60px 200px, rgba(255,255,255,.68) 50%, transparent 52%);
+    background-size: 380px 240px;
+  }
+  .stars2{
+    opacity:.55; animation-duration:140s; animation-direction:reverse;
+    background-image:
+      radial-gradient(1.6px 1.6px at 40px 50px, rgba(255,255,255,.50) 50%, transparent 52%),
+      radial-gradient(1.4px 1.4px at 220px 160px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(1.5px 1.5px at 320px 90px, rgba(255,255,255,.42) 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 120px 210px, rgba(255,255,255,.40) 50%, transparent 52%);
+    background-size: 480px 320px;
+  }
+  .stars3{
+    opacity:.30; animation-duration:200s;
+    background-image:
+      radial-gradient(2px 2px at 60px 80px, rgba(96,165,250,.45) 50%, transparent 52%),
+      radial-gradient(2px 2px at 260px 120px, rgba(34,211,238,.35) 50%, transparent 52%),
+      radial-gradient(2.2px 2.2px at 340px 220px, rgba(147,197,253,.28) 50%, transparent 52%);
+    background-size: 560px 420px;
+  }
+  @keyframes drift{ to{ transform: translate3d(-320px, -240px, 0); } }
+
+  .wrap{ width:min(1120px,100%); }
+
+  .top{
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  @media(max-width:980px){ .top{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    box-shadow:var(--shadow);
+    padding:14px 16px;
+  }
+  .panel.a{ border-radius: 28px 22px 30px 20px; }
+  .panel.b{ border-radius: 22px 30px 22px 30px; }
+
+  .label{ color:var(--muted); font-size:1.05rem; line-height:1; }
+  .scoreBig{
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight:800;
+    margin-top:4px;
+    text-shadow:0 2px 0 rgba(0,0,0,.25);
+  }
+  .hudRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+  .pill{
+    display:flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.03);
+    border-radius:999px;
+    padding:6px 10px;
+    font-variant-numeric: tabular-nums;
+    font-size:1.02rem;
+    color:var(--muted);
+  }
+
+  select.select{
+    appearance:auto;
+    border-radius:18px !important;
+    border:1px solid rgba(255,255,255,.16) !important;
+    background-color: rgba(255,255,255,.05) !important;
+    color:#fff !important;
+    font-weight:800 !important;
+    padding:8px 14px !important;
+    min-width: 150px;
+  }
+  select.select option{ color:#111; background:#fff; }
+
+  .btnCartoon{
+    border-radius:18px !important;
+    font-weight:800 !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    padding:10px 14px !important;
+    box-shadow:0 8px 0 rgba(0,0,0,.35) !important;
+    transform: translateY(0);
+    transition: transform .06s ease;
+    user-select:none;
+  }
+  .btnCartoon:active{ transform: translateY(2px); box-shadow:0 6px 0 rgba(0,0,0,.35) !important; }
+  .btnBlue{
+    background: linear-gradient(180deg, var(--accent), var(--accent2)) !important;
+    color:#061230 !important;
+    border:0 !important;
+  }
+  .btnGhost{
+    background: rgba(255,255,255,.05) !important;
+    border:1px solid rgba(255,255,255,.16) !important;
+    color:#fff !important;
+    box-shadow:0 8px 0 rgba(0,0,0,.28) !important;
+  }
+
+  .board{
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    border-radius: 30px 22px 30px 22px;
+    box-shadow:var(--shadow);
+    padding: clamp(12px, 2.2vw, 18px);
+  }
+  .title{ text-align:center; font-size: clamp(1.55rem, 3.6vw, 2.0rem); font-weight:800; }
+  .subtitle{ text-align:center; color:var(--muted); font-size: clamp(.98rem, 2.7vw, 1.06rem); margin-top:3px; }
+
+  .stage{ margin-top: 12px; display:grid; place-items:center; }
+
+  .rack{
+    width: min(860px, 94vw);
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.03);
+    border-radius: 22px;
+    padding: 10px;
+    margin: 10px auto 12px;
+    position:relative;
+    overflow:hidden;
+  }
+  .rackLabel{
+    position:absolute;
+    top:8px; left:12px;
+    font-size:1.02rem;
+    color: rgba(255,255,255,.72);
+  }
+  .rackInner{
+    position:relative;
+    padding-top: 20px;
+    height: calc(var(--cell) * 3 + var(--gap) * 2 + 18px);
+  }
+
+  .gridStage{
+    width: min(860px, 94vw);
+    aspect-ratio: 1 / 1;
+    position:relative;
+    touch-action:none;
+    user-select:none;
+  }
+
+  .grid{
+    position:absolute;
+    inset:0;
+    display:grid;
+    gap: var(--gap);
+  }
+
+  .cell{
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: var(--radius);
+  }
+  .cell.filled{
+    border-color: rgba(96,165,250,.28);
+    box-shadow: 0 0 0 4px rgba(96,165,250,.08) inset;
+  }
+  .cell.flash{
+    box-shadow:
+      0 0 0 4px rgba(34,211,238,.18) inset,
+      0 0 18px rgba(34,211,238,.24);
+    border-color: rgba(34,211,238,.35);
+    animation: pop .35s ease-out;
+  }
+  @keyframes pop{
+    from{ transform: scale(1); }
+    50%{ transform: scale(1.04); }
+    to{ transform: scale(1); }
+  }
+
+  /* PERFECT-FIT domino */
+  .tile{
+    position:absolute;
+    width: calc(var(--cell) * 2 + var(--gap));
+    height: var(--cell);
+    border-radius: var(--tileRadius);
+    background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(0,0,0,.25));
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 12px 0 rgba(0,0,0,.32);
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+    overflow:hidden;
+  }
+  .tile.vertical{
+    width: var(--cell);
+    height: calc(var(--cell) * 2 + var(--gap));
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .tile.selected{
+    outline: 3px solid rgba(34,211,238,.7);
+    box-shadow: 0 12px 0 rgba(0,0,0,.32), 0 0 0 7px rgba(34,211,238,.14);
+  }
+  .tile:active{ cursor:grabbing; }
+
+  .chip{
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius);
+    display:grid;
+    place-items:center;
+    font-weight: 900;
+    font-size: clamp(1.05rem, 3.0vw, 1.55rem);
+    letter-spacing: 1px;
+    color:#fff;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.16);
+    text-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+
+  .controlsRow{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top: 12px;
+  }
+
+  .toastScore{
+    position:fixed;
+    bottom: 18px;
+    left:50%;
+    transform: translateX(-50%);
+    background: rgba(6,12,30,.92);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    padding: 10px 14px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.55);
+    font-weight: 900;
+    letter-spacing:.2px;
+    display:none;
+    align-items:center;
+    gap:10px;
+    z-index:999;
+  }
+  .toastScore.on{ display:flex; }
+  .toastChip{
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: rgba(34,211,238,.14);
+    border: 1px solid rgba(34,211,238,.30);
+  }
+
+  .statusLine{
+    margin-top: 10px;
+    text-align:center;
+    color: rgba(255,255,255,.80);
+    font-size:.98rem;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+  }
+  .spinner{
+    width:16px;height:16px;border-radius:999px;
+    border:2px solid rgba(255,255,255,.25);
+    border-top-color: rgba(255,255,255,.9);
+    animation: spin .8s linear infinite;
+    display:none;
+  }
+  .spinner.on{ display:inline-block; }
+  @keyframes spin{ to{ transform: rotate(360deg);} }
+</style>
+</head>
+
+<body>
+  <div class="aurora"></div>
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+
+  <div class="wrap">
+    <div class="top">
+      <div class="panel a">
+        <div class="label">Set Score</div>
+        <div id="score" class="scoreBig">0</div>
+
+        <div class="hudRow">
+          <div class="pill">Grid <span id="gridLabel" style="font-weight:800;color:#fff;">10×10</span></div>
+          <div class="pill">Tiles <span id="tileLabel" style="font-weight:800;color:#fff;">12</span></div>
+          <div class="pill">Found <span id="foundLabel" style="font-weight:800;color:#fff;">0</span></div>
+        </div>
+      </div>
+
+      <div class="panel b">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div>
+            <div class="label">Grid size</div>
+            <select id="gridSel" class="form-select select" style="width:auto;">
+              <option value="10" selected>10×10</option>
+              <option value="12">12×12</option>
+              <option value="15">15×15</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">Tile count</div>
+            <select id="tileSel" class="form-select select" style="width:auto;">
+              <option value="10">10</option>
+              <option value="12" selected>12</option>
+              <option value="14">14</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="controlsRow mt-3">
+          <button id="btnNew" class="btn btnCartoon btnBlue">New set</button>
+          <button id="btnRotate" class="btn btnCartoon btnGhost">Rotate selected</button>
+          <button id="btnClear" class="btn btnCartoon btnGhost">Clear board</button>
+        </div>
+
+        <div class="mt-2" style="text-align:center;color:rgba(255,255,255,.75);">
+          Auto-scores instantly when you create a valid horizontal/vertical word (3+). Nothing disappears.
+        </div>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="title">Word Bites</div>
+      <div class="subtitle">Drag 2-letter tiles to make words (horizontal/vertical, 3+ letters)</div>
+
+      <div class="rack" aria-label="Tile rack">
+        <div class="rackLabel">Tiles</div>
+        <div id="rackInner" class="rackInner"></div>
+      </div>
+
+      <div class="stage">
+        <div id="gridStage" class="gridStage">
+          <div id="grid" class="grid" aria-label="Grid"></div>
+        </div>
+      </div>
+
+      <div class="statusLine">
+        <span id="spin" class="spinner"></span>
+        <span id="dictStatus">Dictionary: not loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toastScore" aria-live="polite">
+    <span id="toastWord" class="toastChip">WORD</span>
+    <span id="toastPts">+0</span>
+  </div>
+
+<script>
+  const DICT_URL = "https://cdn.jsdelivr.net/gh/dwyl/english-words/words_alpha.txt";
+
+  // Bigger scoring (long words possible).
+  const SCORE_BASE = {3:120,4:520,5:1400,6:2400,7:3600,8:4300,9:5000};
+  function scoreLen(L){
+    if(L < 3) return 0;
+    if(L <= 9) return SCORE_BASE[L] || 0;
+    return SCORE_BASE[9] + (L-9)*700;
+  }
+
+  const els = {
+    score: document.getElementById("score"),
+    gridLabel: document.getElementById("gridLabel"),
+    tileLabel: document.getElementById("tileLabel"),
+    foundLabel: document.getElementById("foundLabel"),
+
+    gridSel: document.getElementById("gridSel"),
+    tileSel: document.getElementById("tileSel"),
+
+    btnNew: document.getElementById("btnNew"),
+    btnRotate: document.getElementById("btnRotate"),
+    btnClear: document.getElementById("btnClear"),
+
+    rackInner: document.getElementById("rackInner"),
+    gridStage: document.getElementById("gridStage"),
+    grid: document.getElementById("grid"),
+
+    spin: document.getElementById("spin"),
+    dictStatus: document.getElementById("dictStatus"),
+
+    toast: document.getElementById("toast"),
+    toastWord: document.getElementById("toastWord"),
+    toastPts: document.getElementById("toastPts"),
+  };
+
+  const state = {
+    dictLoaded:false,
+    dict:new Map(), // len -> Set
+
+    N:10,
+    tileCount:12,
+
+    board: [],
+    occ: [],
+
+    tiles: new Map(),
+    selectedTileId: null,
+
+    score: 0,
+    foundWords: new Set(),
+
+    cellSize: 0,
+    gapSize: 0,
+
+    scanTimer: null,
+  };
+
+  function setLoading(on, msg){
+    els.spin.classList.toggle("on", !!on);
+    els.dictStatus.textContent = msg;
+  }
+
+  function cleanWord(w){ return (w||"").trim().toLowerCase(); }
+  function normalizeWord(s){ return cleanWord(s).replace(/[^a-z]/g,""); }
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+  // vowel-boosted + common letters
+  const LETTER_BAG =
+    "eeeeeeeeeeeeeeeeeeeeeeee" +
+    "aaaaaaaaaaaaaaaa" +
+    "iiiiiiiiiiiiiiii" +
+    "oooooooooooooooo" +
+    "uuuuuuuu" +
+    "nnnnnnnnrrrrrrrrttttttttllllllssssssdddddd" +
+    "ggggbbbbccccmmmmppppffffhhvvwwyy" +
+    "kjxqz";
+  function randomLetter(){
+    return LETTER_BAG[randInt(0, LETTER_BAG.length-1)];
+  }
+
+  async function ensureDictionaryLoaded(){
+    if(state.dictLoaded) return;
+    for(let len=3; len<=30; len++) state.dict.set(len, new Set());
+
+    setLoading(true, "Loading dictionary…");
+    const res = await fetch(DICT_URL, { cache:"force-cache" });
+    if(!res.ok){
+      setLoading(false, "Dictionary failed to load. Use a local server.");
+      throw new Error("HTTP " + res.status);
+    }
+    const text = await res.text();
+    let count=0;
+
+    for(const line of text.split(/\r?\n/)){
+      const w = cleanWord(line);
+      if(!w) continue;
+      if(w.length < 3 || w.length > 30) continue;
+      if(!/^[a-z]+$/.test(w)) continue;
+      const bucket = state.dict.get(w.length);
+      if(bucket && !bucket.has(w)){ bucket.add(w); count++; }
+    }
+
+    state.dictLoaded = true;
+    setLoading(false, `Dictionary ready (${count.toLocaleString()} words, 3–30 letters)`);
+  }
+
+  function dictHas(word){
+    const b = state.dict.get(word.length);
+    return !!b && b.has(word);
+  }
+
+  function applySettings(){
+    state.N = parseInt(els.gridSel.value, 10);
+    state.tileCount = parseInt(els.tileSel.value, 10);
+    els.gridLabel.textContent = `${state.N}×${state.N}`;
+    els.tileLabel.textContent = String(state.tileCount);
+  }
+
+  function computeCellMetrics(){
+    const rect = els.gridStage.getBoundingClientRect();
+    const N = state.N;
+
+    const gap = Math.max(4, Math.min(10, rect.width * 0.008));
+    const cell = (rect.width - gap*(N-1)) / N;
+
+    state.cellSize = cell;
+    state.gapSize = gap;
+
+    const radius = Math.max(10, Math.floor(cell * 0.30));
+    const tileRadius = Math.max(12, Math.floor(cell * 0.34));
+
+    document.documentElement.style.setProperty("--cell", `${cell}px`);
+    document.documentElement.style.setProperty("--gap", `${gap}px`);
+    document.documentElement.style.setProperty("--radius", `${radius}px`);
+    document.documentElement.style.setProperty("--tileRadius", `${tileRadius}px`);
+  }
+
+  function renderGrid(){
+    computeCellMetrics();
+    els.grid.style.gridTemplateColumns = `repeat(${state.N}, 1fr)`;
+    els.grid.innerHTML = "";
+
+    const N = state.N;
+    state.board = Array(N*N).fill("");
+    state.occ = Array(N*N).fill(null);
+
+    for(let i=0;i<N*N;i++){
+      const d = document.createElement("div");
+      d.className = "cell";
+      d.dataset.idx = String(i);
+      els.grid.appendChild(d);
+    }
+  }
+
+  function repaintCells(){
+    const cells = els.grid.children;
+    for(let i=0;i<cells.length;i++){
+      cells[i].classList.toggle("filled", !!state.board[i]);
+    }
+  }
+
+  function flashCells(indices){
+    const kids = els.grid.children;
+    for(const idx of indices){
+      const el = kids[idx];
+      if(!el) continue;
+      el.classList.add("flash");
+      setTimeout(()=>el.classList.remove("flash"), 320);
+    }
+  }
+
+  function cellToXY(idx){
+    const N = state.N;
+    const r = Math.floor(idx / N);
+    const c = idx % N;
+    const x = c * (state.cellSize + state.gapSize);
+    const y = r * (state.cellSize + state.gapSize);
+    return {x,y};
+  }
+
+  // round to nearest cell
+  function anchorFromStageXY(x, y){
+    const step = state.cellSize + state.gapSize;
+    const c = Math.round(x / step);
+    const r = Math.round(y / step);
+    if(r < 0 || c < 0 || r >= state.N || c >= state.N) return null;
+    return r*state.N + c;
+  }
+
+  function newTile(id){
+    return {
+      id,
+      letters: [randomLetter(), randomLetter()],
+      vertical: false,
+      placed: false,
+      anchor: null,
+      x: 0, y: 0,
+      el: null,
+      homeX: 0, homeY: 0,
+    };
+  }
+
+  function tileCells(tile, anchorIdx){
+    const N = state.N;
+    if(anchorIdx == null) return [];
+    if(!tile.vertical){
+      const c = anchorIdx % N;
+      if(c+1 >= N) return [];
+      return [anchorIdx, anchorIdx+1];
+    }else{
+      const r = Math.floor(anchorIdx / N);
+      if(r+1 >= N) return [];
+      return [anchorIdx, anchorIdx+N];
+    }
+  }
+
+  // STRICT: no overlap ever
+  function canPlace(tile, anchorIdx){
+    const cells = tileCells(tile, anchorIdx);
+    if(cells.length !== 2) return false;
+    for(const idx of cells){
+      const occ = state.occ[idx];
+      if(occ !== null && occ !== tile.id) return false;
+    }
+    return true;
+  }
+
+  function removeTileFromBoard(tile){
+    if(!tile.placed || tile.anchor == null) return;
+    const cells = tileCells(tile, tile.anchor);
+    for(const idx of cells){
+      if(state.occ[idx] === tile.id) state.occ[idx] = null;
+      state.board[idx] = "";
+    }
+    tile.placed = false;
+    tile.anchor = null;
+    repaintCells();
+  }
+
+  function snapTileToAnchor(tile){
+    if(tile.anchor == null) return;
+    const {x,y} = cellToXY(tile.anchor);
+    tile.x = x; tile.y = y;
+    tile.el.style.left = `${x}px`;
+    tile.el.style.top  = `${y}px`;
+  }
+
+  function placeTile(tile, anchorIdx){
+    if(!canPlace(tile, anchorIdx)) return false;
+
+    removeTileFromBoard(tile);
+
+    const cells = tileCells(tile, anchorIdx);
+    if(cells.length !== 2) return false;
+
+    tile.placed = true;
+    tile.anchor = anchorIdx;
+
+    state.occ[cells[0]] = tile.id;
+    state.occ[cells[1]] = tile.id;
+
+    state.board[cells[0]] = tile.letters[0];
+    state.board[cells[1]] = tile.letters[1];
+
+    snapTileToAnchor(tile);
+    repaintCells();
+    scheduleAutoScan();
+    return true;
+  }
+
+  function updateTileClasses(tile){
+    tile.el.classList.toggle("vertical", tile.vertical);
+    tile.el.classList.toggle("selected", state.selectedTileId === tile.id);
+  }
+
+  function selectTile(id){
+    state.selectedTileId = id;
+    for(const t of state.tiles.values()) updateTileClasses(t);
+  }
+
+  function rotateSelected(forceId=null){
+    const id = forceId ?? state.selectedTileId;
+    if(id == null) return;
+    const tile = state.tiles.get(id);
+    if(!tile) return;
+
+    if(tile.placed && tile.anchor != null){
+      const oldVert = tile.vertical;
+      const oldAnchor = tile.anchor;
+      removeTileFromBoard(tile);
+      tile.vertical = !oldVert;
+      if(!placeTile(tile, oldAnchor)){
+        tile.vertical = oldVert;
+        placeTile(tile, oldAnchor);
+      }
+    }else{
+      tile.vertical = !tile.vertical;
+      scheduleAutoScan();
+    }
+    updateTileClasses(tile);
+  }
+
+  function createTileElement(tile){
+    const el = document.createElement("div");
+    el.className = "tile";
+    el.dataset.id = String(tile.id);
+
+    const c1 = document.createElement("div");
+    c1.className = "chip";
+    c1.textContent = tile.letters[0].toUpperCase();
+
+    const c2 = document.createElement("div");
+    c2.className = "chip";
+    c2.textContent = tile.letters[1].toUpperCase();
+
+    el.appendChild(c1);
+    el.appendChild(c2);
+    tile.el = el;
+
+    el.addEventListener("pointerdown", (e)=>onTilePointerDown(e, tile.id), {passive:false});
+    el.addEventListener("click", (e)=>{ e.stopPropagation(); selectTile(tile.id); });
+
+    // double-tap rotate
+    let lastTap = 0;
+    el.addEventListener("pointerup", ()=>{
+      const now = performance.now();
+      if(now - lastTap < 280) rotateSelected(tile.id);
+      lastTap = now;
+    }, {passive:true});
+
+    els.rackInner.appendChild(el);
+    updateTileClasses(tile);
+  }
+
+  function layoutRack(){
+    const perRow = 5;
+    const stepX = (state.cellSize * 2 + state.gapSize) + state.gapSize;
+    const stepY = state.cellSize + state.gapSize;
+
+    let i = 0;
+    for(const t of state.tiles.values()){
+      const row = Math.floor(i / perRow);
+      const col = i % perRow;
+      t.homeX = 12 + col * stepX;
+      t.homeY = 28 + row * stepY;
+
+      t.el.style.position = "absolute";
+      t.el.style.left = `${t.homeX}px`;
+      t.el.style.top  = `${t.homeY}px`;
+
+      t.placed = false;
+      t.anchor = null;
+      i++;
+    }
+  }
+
+  // ===== Drag =====
+  const drag = { active:false, id:null, pointerId:null, offsetX:0, offsetY:0, stageRect:null };
+
+  function onTilePointerDown(e, id){
+    e.preventDefault();
+    e.stopPropagation();
+
+    const tile = state.tiles.get(id);
+    if(!tile) return;
+
+    selectTile(id);
+
+    if(tile.placed) removeTileFromBoard(tile);
+
+    const tileRect = tile.el.getBoundingClientRect();
+    drag.stageRect = els.gridStage.getBoundingClientRect();
+
+    drag.offsetX = e.clientX - tileRect.left;
+    drag.offsetY = e.clientY - tileRect.top;
+
+    // convert current element position to stage coords
+    const stageX = tileRect.left - drag.stageRect.left;
+    const stageY = tileRect.top  - drag.stageRect.top;
+
+    els.gridStage.appendChild(tile.el);
+    tile.el.style.position = "absolute";
+    tile.x = stageX;
+    tile.y = stageY;
+    tile.el.style.left = `${tile.x}px`;
+    tile.el.style.top  = `${tile.y}px`;
+
+    drag.active = true;
+    drag.id = id;
+    drag.pointerId = e.pointerId;
+
+    try{ tile.el.setPointerCapture(e.pointerId); }catch(_){}
+
+    window.addEventListener("pointermove", onDragMove, {passive:false});
+    window.addEventListener("pointerup", onDragUp, {passive:false});
+    window.addEventListener("pointercancel", onDragCancel, {passive:false});
+  }
+
+  function onDragMove(e){
+    if(!drag.active) return;
+    if(drag.pointerId != null && e.pointerId !== drag.pointerId) return;
+    e.preventDefault();
+
+    const tile = state.tiles.get(drag.id);
+    if(!tile) return;
+
+    const x = (e.clientX - drag.stageRect.left) - drag.offsetX;
+    const y = (e.clientY - drag.stageRect.top)  - drag.offsetY;
+
+    tile.x = x; tile.y = y;
+    tile.el.style.left = `${x}px`;
+    tile.el.style.top  = `${y}px`;
+  }
+
+  function onDragUp(e){
+    if(!drag.active) return;
+    if(drag.pointerId != null && e.pointerId !== drag.pointerId) return;
+    e.preventDefault();
+
+    const tile = state.tiles.get(drag.id);
+    cleanupDrag();
+    if(!tile) return;
+
+    const stageRect = els.gridStage.getBoundingClientRect();
+    const inStage =
+      (e.clientX >= stageRect.left && e.clientX <= stageRect.right &&
+       e.clientY >= stageRect.top  && e.clientY <= stageRect.bottom);
+
+    if(inStage){
+      const anchor = anchorFromStageXY(tile.x, tile.y);
+      if(anchor != null && placeTile(tile, anchor)) return;
+    }
+
+    // return to rack
+    els.rackInner.appendChild(tile.el);
+    tile.el.style.position = "absolute";
+    tile.x = tile.homeX;
+    tile.y = tile.homeY;
+    tile.el.style.left = `${tile.homeX}px`;
+    tile.el.style.top  = `${tile.homeY}px`;
+    tile.placed = false;
+    tile.anchor = null;
+    scheduleAutoScan();
+  }
+
+  function onDragCancel(){ cleanupDrag(); }
+
+  function cleanupDrag(){
+    drag.active = false;
+    drag.id = null;
+    drag.pointerId = null;
+    window.removeEventListener("pointermove", onDragMove);
+    window.removeEventListener("pointerup", onDragUp);
+    window.removeEventListener("pointercancel", onDragCancel);
+  }
+
+  // ===== Auto-scan + auto-score =====
+  function scanLines(){
+    const results = [];
+    const N = state.N;
+    const B = state.board;
+
+    // horizontal
+    for(let r=0;r<N;r++){
+      let c=0;
+      while(c<N){
+        while(c<N && !B[r*N+c]) c++;
+        if(c>=N) break;
+        let s="", cells=[];
+        while(c<N && B[r*N+c]){
+          s += B[r*N+c];
+          cells.push(r*N+c);
+          c++;
+        }
+        if(s.length>=3) results.push({word:s, cells});
+      }
+    }
+
+    // vertical
+    for(let c=0;c<N;c++){
+      let r=0;
+      while(r<N){
+        while(r<N && !B[r*N+c]) r++;
+        if(r>=N) break;
+        let s="", cells=[];
+        while(r<N && B[r*N+c]){
+          s += B[r*N+c];
+          cells.push(r*N+c);
+          r++;
+        }
+        if(s.length>=3) results.push({word:s, cells});
+      }
+    }
+    return results;
+  }
+
+  function showToast(word, pts){
+    els.toastWord.textContent = word.toUpperCase();
+    els.toastPts.textContent = `+${pts}`;
+    els.toast.classList.add("on");
+    setTimeout(()=>els.toast.classList.remove("on"), 900);
+  }
+
+  function autoScore(){
+    if(!state.dictLoaded) return;
+
+    const lines = scanLines();
+    let any = false;
+
+    for(const entry of lines){
+      const w = normalizeWord(entry.word);
+      if(w.length < 3 || w.length > 30) continue;
+      if(state.foundWords.has(w)) continue;
+      if(!dictHas(w)) continue;
+
+      // score it once
+      const pts = scoreLen(w.length);
+      state.foundWords.add(w);
+      state.score += pts;
+      els.score.textContent = String(state.score);
+      els.foundLabel.textContent = String(state.foundWords.size);
+
+      flashCells(entry.cells);
+      showToast(w, pts);
+      any = true;
+    }
+
+    // no “invalid word” spam — just silently don’t score if nothing new
+    if(any){
+      // slight nudge: let people know auto-scoring is alive
+    }
+  }
+
+  function scheduleAutoScan(){
+    clearTimeout(state.scanTimer);
+    state.scanTimer = setTimeout(autoScore, 80); // debounce
+  }
+
+  // ===== Set lifecycle =====
+  function clearBoardOnly(){
+    const N = state.N;
+    state.board = Array(N*N).fill("");
+    state.occ = Array(N*N).fill(null);
+
+    for(const t of state.tiles.values()){
+      t.placed = false;
+      t.anchor = null;
+      if(t.el.parentNode !== els.rackInner) els.rackInner.appendChild(t.el);
+      t.el.style.position = "absolute";
+      t.el.style.left = `${t.homeX}px`;
+      t.el.style.top  = `${t.homeY}px`;
+    }
+
+    repaintCells();
+    scheduleAutoScan();
+  }
+
+  function newSet(){
+    applySettings();
+    renderGrid();
+
+    els.rackInner.innerHTML = "";
+    state.tiles.clear();
+    state.selectedTileId = null;
+
+    state.score = 0;
+    state.foundWords.clear();
+    els.score.textContent = "0";
+    els.foundLabel.textContent = "0";
+
+    for(let i=0;i<state.tileCount;i++){
+      const t = newTile(i);
+      state.tiles.set(i, t);
+      createTileElement(t);
+    }
+    layoutRack();
+    repaintCells();
+    scheduleAutoScan();
+  }
+
+  // ===== Events =====
+  els.btnNew.addEventListener("click", newSet);
+  els.btnRotate.addEventListener("click", ()=>rotateSelected());
+  els.btnClear.addEventListener("click", clearBoardOnly);
+
+  window.addEventListener("resize", ()=>{
+    computeCellMetrics();
+    // resnap placed tiles and relayout rack
+    for(const t of state.tiles.values()){
+      if(t.placed) snapTileToAnchor(t);
+    }
+    layoutRack();
+  });
+
+  (async()=>{
+    await ensureDictionaryLoaded();
+    newSet();
+  })();
+</script>
+</body>
+</html>
